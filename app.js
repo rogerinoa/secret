@@ -4,7 +4,10 @@ const express = require("express");
 const bodyParser =require('body-parser');
 const ejs = require("ejs");
 const mongoose = require("mongoose")
-const encrypt = require("mongoose-encryption")
+const bcrypt = require("bcrypt")
+const saltRounds =10;
+//then in the function when the user enters the pw in our register we pass it as an arg for our md5 method
+//in the post request
 
 
 const app = express();
@@ -29,17 +32,11 @@ const userSchema = new mongoose.Schema( {
 })
 
 
-
 /////////////secret to encrypt ourUser Info this should be done before the mongoose model creation////////////
 //here should be the key that is at the .env
 ///now we can use this secret and encrypt our database schema using the plugin function and passing our secret mesage
-userSchema.plugin(encrypt, {secret:process.env.SECRET,encryptedFields: ['password']});
-
 
 const User = new mongoose.model("User",userSchema)
-
-
-
 
 
 const user1 = new User({
@@ -50,7 +47,7 @@ password: 'total'
 // user1.save()
 
 app.get("/",function(req,res){
-  console.log('hola')
+
   res.render('home')
 
 })
@@ -66,17 +63,21 @@ app.get("/register",function(req,res){
 ///////////////register post handler//////////////////
 
 app.post("/register",function(req,res){
-  const newUser = new User({
-    email:req.body.username,
-    password:req.body.password
-  });
-  newUser.save(function(err){
-    if(err){
-      console.log(err)
-    }else{
-      res.render("secrets")
-    }
-  })
+  bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+        // Store hash in your password DB.
+        const newUser = new User({
+          email:req.body.username,
+          password:hash
+        });
+        newUser.save(function(err){
+          if(err){
+            console.log(err)
+          }else{
+            res.render("secrets")
+          }
+        })
+    });
+
 
 })//postregisterend
 /////////////////////////////////////////////////////
@@ -90,12 +91,14 @@ app.post("/login",function(req,res){
       console.log(err)
     }else{
       if(foundUser){
-        if(foundUser.password === password){
-          res.render("secrets")
+        bcrypt.compare(password,foundUser.password, function(err,result){
+          if (result == true){
+            res.render("secrets")
+          }
+        })
         }
       }
-    }
-  })
+    })
 })//endpostlogin
 /////////////////////////////////////////////////////
 
