@@ -57,13 +57,6 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 
-const user1 = new User({
-email:'rogerinoa2@gmail.com',
-password: 'total'
-
-})
-// user1.save()
-
 app.get("/",function(req,res){
 
   res.render('home')
