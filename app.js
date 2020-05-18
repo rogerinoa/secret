@@ -98,8 +98,11 @@ passport.use(new FacebookStrategy({
   }
 ));
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 45d83b0c0befbbf306e6eefd2c9493e4d47ccc4e
 app.get("/",function(req,res){
   res.render("home")
 });
